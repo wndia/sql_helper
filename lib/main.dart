@@ -11,10 +11,13 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter SQLite Demo',
-      home: HomePage(),
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
+      ),
+      home: const HomePage(),
     );
   }
 }
@@ -68,58 +71,73 @@ class HomePageState extends State<HomePage> {
     }
 
     showModalBottomSheet(
+      isScrollControlled: true,
       context: context,
       builder: (_) => Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
+        padding: EdgeInsets.only(
+          top: 16,
+          left: 16,
+          right: 16,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
                 controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Title')),
-            TextField(
+                decoration: const InputDecoration(labelText: 'Title'),
+              ),
+              TextField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Description')),
-            TextField(
+                decoration: const InputDecoration(labelText: 'Description'),
+              ),
+              TextField(
                 controller: _noteController,
-                decoration: const InputDecoration(labelText: 'Note')),
-            const SizedBox(height: 10),
-            _image != null
-                ? Image.file(_image!, height: 100)
-                : const Text("No Image Selected"),
-            ElevatedButton(
-              onPressed: _pickImage,
-              child: const Text("Pick Image"),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                if (id == null) {
-                  await SQLHelper.createItem(
-                      _titleController.text,
-                      _descriptionController.text,
-                      _noteController.text,
-                      _image?.path);
-                } else {
-                  await SQLHelper.updateItem(
-                      id,
-                      _titleController.text,
-                      _descriptionController.text,
-                      _noteController.text,
-                      _image?.path);
-                }
-                _titleController.clear();
-                _descriptionController.clear();
-                _noteController.clear();
-                _image = null;
+                decoration: const InputDecoration(labelText: 'Note'),
+              ),
+              const SizedBox(height: 10),
+              _image != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child:
+                          Image.file(_image!, height: 120, fit: BoxFit.cover),
+                    )
+                  : const Text("No Image Selected"),
+              ElevatedButton(
+                onPressed: _pickImage,
+                child: const Text("Pick Image"),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  if (id == null) {
+                    await SQLHelper.createItem(
+                        _titleController.text,
+                        _descriptionController.text,
+                        _noteController.text,
+                        _image?.path);
+                  } else {
+                    await SQLHelper.updateItem(
+                        id,
+                        _titleController.text,
+                        _descriptionController.text,
+                        _noteController.text,
+                        _image?.path);
+                  }
+                  _titleController.clear();
+                  _descriptionController.clear();
+                  _noteController.clear();
+                  _image = null;
 
-                if (!mounted) return;
-                Navigator.of(context).pop();
-                _refreshItems();
-              },
-              child: Text(id == null ? 'Add Item' : 'Update Item'),
-            )
-          ],
+                  if (!mounted) return;
+                  Navigator.of(context).pop();
+                  _refreshItems();
+                },
+                child: Text(id == null ? 'Add Item' : 'Update Item'),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -133,6 +151,7 @@ class HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(title: const Text('SQLite CRUD Example')),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -140,25 +159,41 @@ class HomePageState extends State<HomePage> {
               itemCount: _items.length,
               itemBuilder: (context, index) => Card(
                 margin: const EdgeInsets.all(8),
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15)),
                 child: ListTile(
-                  title: Text(_items[index]['title']),
+                  contentPadding: const EdgeInsets.all(10),
+                  title: Text(
+                    _items[index]['title'],
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(_items[index]['description']),
-                      Text(_items[index]['note']),
+                      Text(
+                        _items[index]['note'],
+                        style: const TextStyle(fontStyle: FontStyle.italic),
+                      ),
                       if (_items[index]['image'] != null)
-                        Image.file(File(_items[index]['image']), height: 100)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.file(File(_items[index]['image']),
+                              height: 120, fit: BoxFit.cover),
+                        )
                     ],
                   ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                          icon: const Icon(Icons.edit),
+                          icon:
+                              const Icon(Icons.edit, color: Colors.blueAccent),
                           onPressed: () => _showForm(_items[index]['id'])),
                       IconButton(
-                          icon: const Icon(Icons.delete),
+                          icon:
+                              const Icon(Icons.delete, color: Colors.redAccent),
                           onPressed: () => _deleteItem(_items[index]['id'])),
                     ],
                   ),
@@ -167,7 +202,8 @@ class HomePageState extends State<HomePage> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showForm(null),
-        child: const Icon(Icons.add),
+        backgroundColor: Colors.blueAccent,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
