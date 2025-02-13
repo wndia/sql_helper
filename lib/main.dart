@@ -152,7 +152,7 @@ class HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(title: const Text('SQLite CRUD Example')),
+      appBar: AppBar(title: const Text('SQL Lite')),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
